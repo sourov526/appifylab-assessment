@@ -1,0 +1,16 @@
+{
+  "name": "appifylab-assessment-workspace",
+  "private": true,
+  "scripts": {
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "server:dev": "npm --prefix server run dev",
+    "server:build": "npm --prefix server run build"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  }
+}
