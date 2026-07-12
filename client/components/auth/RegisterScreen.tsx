@@ -1,5 +1,5 @@
-import { StaticPageMarkup } from "@/components/shared/StaticPageMarkup";
+import { RegisterMarkup } from "@/components/auth/RegisterMarkup";
 
 export function RegisterScreen() {
-  return <StaticPageMarkup pageName="register" />;
+  return <RegisterMarkup />;
 }

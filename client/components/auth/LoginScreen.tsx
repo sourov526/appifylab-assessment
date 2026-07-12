@@ -1,5 +1,5 @@
-import { StaticPageMarkup } from "@/components/shared/StaticPageMarkup";
+import { LoginMarkup } from "@/components/auth/LoginMarkup";
 
 export function LoginScreen() {
-  return <StaticPageMarkup pageName="login" />;
+  return <LoginMarkup />;
 }
