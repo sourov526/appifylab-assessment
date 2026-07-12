@@ -1,5 +1,5 @@
 import Script from "next/script";
-import { getPageMarkup } from "../../lib/get-page-markup";
+import { StaticPageMarkup } from "@/components/shared/StaticPageMarkup";
 
 const notifyScript = `
   const notifyDropdown = document.querySelector("#_notify_drop");
@@ -19,10 +19,10 @@ const notifyScript = `
   }
 `;
 
-export default function FeedPage() {
+export function FeedScreen() {
   return (
     <>
-      <main dangerouslySetInnerHTML={{ __html: getPageMarkup("feed") }} />
+      <StaticPageMarkup pageName="feed" />
       <Script src="/assets/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       <Script src="/assets/js/custom.js" strategy="afterInteractive" />
       <Script id="feed-notify-script" strategy="afterInteractive">

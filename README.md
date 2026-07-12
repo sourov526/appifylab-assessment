@@ -2,7 +2,7 @@
 
 ## Run locally
 
-1. Open a terminal in `appifylab_assessment`
+1. Open a terminal in `appifylab_assessment/client`
 2. Install dependencies:
 
 ```bash
