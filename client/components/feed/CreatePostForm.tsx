@@ -2,13 +2,16 @@
 
 import { useRef, useState } from "react";
 import { createPost } from "@/lib/api";
+import { getUserAvatarSrc } from "@/lib/avatar";
 import type { CreatePostInput, FeedPost, Visibility } from "@/types";
+import type { AuthUser } from "@/types";
 
 type CreatePostFormProps = {
+  currentUser: AuthUser | null;
   onCreated: (post: FeedPost) => void;
 };
 
-export function CreatePostForm({ onCreated }: CreatePostFormProps) {
+export function CreatePostForm({ currentUser, onCreated }: CreatePostFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [content, setContent] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("PUBLIC");
@@ -57,7 +60,11 @@ export function CreatePostForm({ onCreated }: CreatePostFormProps) {
       <div className="_feed_inner_text_area _b_radious6 _padd_b24 _padd_t24 _padd_r24 _padd_l24 _mar_b16">
         <div className="_feed_inner_text_area_box">
           <div className="_feed_inner_text_area_box_image">
-            <img src="/assets/images/txt_img.png" alt="User" className="_txt_img" />
+            <img
+              src={currentUser ? getUserAvatarSrc(currentUser) : "/assets/images/txt_img.png"}
+              alt="User"
+              className="_txt_img"
+            />
           </div>
           <div className="form-floating _feed_inner_text_area_box_form">
             <textarea

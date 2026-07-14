@@ -4,6 +4,7 @@ import Script from "next/script";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, getMe, getPosts, logout } from "@/lib/api";
+import { getUserAvatarSrc } from "@/lib/avatar";
 import type { AuthUser, FeedPost } from "@/types";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
@@ -70,6 +71,7 @@ export function FeedScreen() {
   const currentUserName = currentUser
     ? `${currentUser.firstName} ${currentUser.lastName}`
     : "Dylan Field";
+  const currentUserAvatarSrc = currentUser ? getUserAvatarSrc(currentUser) : "/assets/images/profile.png";
 
   async function handleLogout(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault();
@@ -769,7 +771,7 @@ export function FeedScreen() {
                 <div className="_header_nav_profile">
                   <div className="_header_nav_profile_image">
                     <img
-                      src="/assets/images/profile.png"
+                      src={currentUserAvatarSrc}
                       alt="Image"
                       className="_nav_profile_img"
                     />
@@ -803,7 +805,7 @@ export function FeedScreen() {
                     <div className="_nav_profile_dropdown_info">
                       <div className="_nav_profile_dropdown_image">
                         <img
-                          src="/assets/images/profile.png"
+                          src={currentUserAvatarSrc}
                           alt="Image"
                           className="_nav_drop_img"
                         />
@@ -1825,7 +1827,7 @@ export function FeedScreen() {
                         </div>
                       </div>
                       {/*For Mobile End*/}
-                      <CreatePostForm onCreated={prependPost} />
+                      <CreatePostForm currentUser={currentUser} onCreated={prependPost} />
                       {error ? (
                         <div className="_feed_inner_timeline_post_area _b_radious6 _padd_b24 _padd_t24 _mar_b16">
                           <div className="_feed_inner_timeline_content _padd_r24 _padd_l24">
@@ -1841,7 +1843,12 @@ export function FeedScreen() {
                         </div>
                       ) : posts.length ? (
                         posts.map((post) => (
-                          <PostCard key={post.id} post={post} onPostUpdate={updatePost} />
+                          <PostCard
+                            key={post.id}
+                            currentUser={currentUser}
+                            post={post}
+                            onPostUpdate={updatePost}
+                          />
                         ))
                       ) : (
                         <div className="_feed_inner_timeline_post_area _b_radious6 _padd_b24 _padd_t24 _mar_b16">

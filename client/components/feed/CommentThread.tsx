@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { createReply, likeComment, likeReply, unlikeComment, unlikeReply } from "@/lib/api";
-import type { Comment, Reply } from "@/types";
+import { getUserAvatarSrc } from "@/lib/avatar";
+import type { AuthUser, Comment, Reply } from "@/types";
 import { LikesModal } from "./LikesModal";
 
 type CommentThreadProps = {
   comment: Comment;
+  currentUser: AuthUser | null;
   onCommentUpdate: (commentId: string, updater: (comment: Comment) => Comment) => void;
 };
 
@@ -45,7 +47,7 @@ function ReplyItem({
     <div className="_comment_main _comment_main_reply">
       <div className="_comment_image">
         <span className="_comment_image_link">
-          <img src="/assets/images/comment_img.png" alt="Reply author" className="_comment_img1" />
+          <img src={getUserAvatarSrc(reply.author)} alt="Reply author" className="_comment_img1" />
         </span>
       </div>
       <div className="_comment_area">
@@ -116,7 +118,7 @@ function ReplyItem({
   );
 }
 
-export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) {
+export function CommentThread({ comment, currentUser, onCommentUpdate }: CommentThreadProps) {
   const [replyContent, setReplyContent] = useState("");
   const [isReplying, setIsReplying] = useState(false);
   const [likesTarget, setLikesTarget] = useState<{ title: string; likers: Reply["likers"] | Comment["likers"] } | null>(
@@ -174,7 +176,7 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
       <div className="_comment_main">
         <div className="_comment_image">
           <span className="_comment_image_link">
-            <img src="/assets/images/txt_img.png" alt="Comment author" className="_comment_img1" />
+            <img src={getUserAvatarSrc(comment.author)} alt="Comment author" className="_comment_img1" />
           </span>
         </div>
         <div className="_comment_area">
@@ -254,7 +256,11 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
             <form className="_feed_inner_comment_box_form" onSubmit={handleReplySubmit}>
               <div className="_feed_inner_comment_box_content">
                 <div className="_feed_inner_comment_box_content_image">
-                  <img src="/assets/images/comment_img.png" alt="Reply" className="_comment_img" />
+                  <img
+                    src={currentUser ? getUserAvatarSrc(currentUser) : "/assets/images/comment_img.png"}
+                    alt="Reply"
+                    className="_comment_img"
+                  />
                 </div>
                 <div className="_feed_inner_comment_box_content_txt">
                   <textarea

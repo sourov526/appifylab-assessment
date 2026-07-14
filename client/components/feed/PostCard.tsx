@@ -6,12 +6,14 @@ import {
   resolveApiAssetUrl,
   unlikePost,
 } from "@/lib/api";
-import type { Comment, FeedPost } from "@/types";
+import { getUserAvatarSrc } from "@/lib/avatar";
+import type { AuthUser, Comment, FeedPost } from "@/types";
 import { useRef, useState } from "react";
 import { CommentThread } from "./CommentThread";
 import { LikesModal } from "./LikesModal";
 
 type PostCardProps = {
+  currentUser: AuthUser | null;
   post: FeedPost;
   onPostUpdate: (postId: string, updater: (post: FeedPost) => FeedPost) => void;
 };
@@ -20,7 +22,7 @@ function formatDateTime(value: string) {
   return new Date(value).toLocaleString();
 }
 
-export function PostCard({ post, onPostUpdate }: PostCardProps) {
+export function PostCard({ currentUser, post, onPostUpdate }: PostCardProps) {
   const [commentContent, setCommentContent] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
@@ -32,6 +34,8 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
     ? post.comments
     : post.comments.slice(-1);
   const hiddenCommentsCount = post.comments.length - visibleComments.length;
+  const visibleLikers = post.likers.slice(0, 5);
+  const remainingLikesCount = Math.max(0, post.likesCount - visibleLikers.length);
 
   async function handlePostLikeToggle() {
     const result = post.likedByMe
@@ -90,7 +94,7 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
             <div className="_feed_inner_timeline_post_box">
               <div className="_feed_inner_timeline_post_box_image">
                 <img
-                  src="/assets/images/txt_img.png"
+                  src={getUserAvatarSrc(post.author)}
                   alt="Author"
                   className="_comment_img1"
                 />
@@ -151,13 +155,16 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           >
             {post.likesCount > 0 ? (
               <>
-                <img
-                  src="/assets/images/react_img1.png"
-                  alt="Reaction"
-                  className="_react_img1"
-                />
+                {visibleLikers.map((liker, index) => (
+                  <img
+                    key={liker.id}
+                    src={getUserAvatarSrc(liker)}
+                    alt={`${liker.firstName} ${liker.lastName}`}
+                    className={index === 0 ? "_react_img1" : "_react_img"}
+                  />
+                ))}
                 <p className="_feed_inner_timeline_total_reacts_para">
-                  {post.likesCount}
+                  {remainingLikesCount > 0 ? `${remainingLikesCount}+` : post.likesCount}
                 </p>
               </>
             ) : null}
@@ -248,7 +255,7 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
               <div className="_feed_inner_comment_box_content">
                 <div className="_feed_inner_comment_box_content_image">
                   <img
-                    src="/assets/images/comment_img.png"
+                    src={currentUser ? getUserAvatarSrc(currentUser) : "/assets/images/comment_img.png"}
                     alt="Comment"
                     className="_comment_img"
                   />
@@ -327,6 +334,7 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
             <CommentThread
               key={comment.id}
               comment={comment}
+              currentUser={currentUser}
               onCommentUpdate={updateComment}
             />
           ))}
