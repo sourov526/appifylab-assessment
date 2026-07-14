@@ -3,8 +3,8 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, getPosts, logout } from "@/lib/api";
-import type { FeedPost } from "@/types";
+import { ApiError, getMe, getPosts, logout } from "@/lib/api";
+import type { AuthUser, FeedPost } from "@/types";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
 
@@ -29,6 +29,7 @@ const notifyScript = `
 export function FeedScreen() {
   const router = useRouter();
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -38,7 +39,9 @@ export function FeedScreen() {
       setIsLoading(true);
 
       try {
+        const { user } = await getMe();
         const { posts: nextPosts } = await getPosts();
+        setCurrentUser(user);
         setPosts(nextPosts);
         setError(null);
       } catch (caughtError) {
@@ -63,6 +66,10 @@ export function FeedScreen() {
   function updatePost(postId: string, updater: (post: FeedPost) => FeedPost) {
     setPosts((current) => current.map((post) => (post.id === postId ? updater(post) : post)));
   }
+
+  const currentUserName = currentUser
+    ? `${currentUser.firstName} ${currentUser.lastName}`
+    : "Dylan Field";
 
   async function handleLogout(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault();
@@ -768,7 +775,7 @@ export function FeedScreen() {
                     />
                   </div>
                   <div className="_header_nav_dropdown">
-                    <p className="_header_nav_para">Dylan Field</p>
+                    <p className="_header_nav_para">{currentUserName}</p>
                     <button
                       id="_profile_drop_show_btn"
                       className="_header_nav_dropdown_btn _dropdown_toggle"
@@ -802,7 +809,7 @@ export function FeedScreen() {
                         />
                       </div>
                       <div className="_nav_profile_dropdown_info_txt">
-                        <h4 className="_nav_dropdown_title">Dylan Field</h4>
+                        <h4 className="_nav_dropdown_title">{currentUserName}</h4>
                         <a href="#0" className="_nav_drop_profile">
                           View Profile
                         </a>
