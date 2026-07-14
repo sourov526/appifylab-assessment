@@ -107,12 +107,12 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
               }
             }}
           >
-            <img src="/assets/images/react_img1.png" alt="Reaction" className="_react_img1" />
-            <img src="/assets/images/react_img2.png" alt="Reaction" className="_react_img" />
-            <img src="/assets/images/react_img3.png" alt="Reaction" className="_react_img" />
-            <img src="/assets/images/react_img4.png" alt="Reaction" className="_react_img _rect_img_mbl_none" />
-            <img src="/assets/images/react_img5.png" alt="Reaction" className="_react_img _rect_img_mbl_none" />
-            <p className="_feed_inner_timeline_total_reacts_para">{post.likesCount}</p>
+            {post.likesCount > 0 ? (
+              <>
+                <img src="/assets/images/react_img1.png" alt="Reaction" className="_react_img1" />
+                <p className="_feed_inner_timeline_total_reacts_para">{post.likesCount}</p>
+              </>
+            ) : null}
           </div>
           <div className="_feed_inner_timeline_total_reacts_txt">
             <p className="_feed_inner_timeline_total_reacts_para1">
