@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, getPosts } from "@/lib/api";
+import { ApiError, getPosts, logout } from "@/lib/api";
 import type { FeedPost } from "@/types";
 import { CreatePostForm } from "./CreatePostForm";
 import { PostCard } from "./PostCard";
@@ -31,6 +31,7 @@ export function FeedScreen() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     async function loadFeed() {
@@ -61,6 +62,27 @@ export function FeedScreen() {
 
   function updatePost(postId: string, updater: (post: FeedPost) => FeedPost) {
     setPosts((current) => current.map((post) => (post.id === postId ? updater(post) : post)));
+  }
+
+  async function handleLogout(event: React.MouseEvent<HTMLElement>) {
+    event.preventDefault();
+
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+      window.location.href = "/login";
+      return;
+    } catch (_error) {
+      window.location.href = "/login";
+      return;
+    } finally {
+      setIsLoggingOut(false);
+    }
   }
 
   return (
@@ -789,7 +811,7 @@ export function FeedScreen() {
                     <hr />
                     <ul className="_nav_dropdown_list">
                       <li className="_nav_dropdown_list_item">
-                        <a href="#0" className="_nav_dropdown_link">
+                        <a href="#0" className="_nav_dropdown_link" onClick={handleLogout}>
                           <div className="_nav_drop_info">
                             <span>
                               <svg
@@ -871,7 +893,11 @@ export function FeedScreen() {
                         </a>
                       </li>
                       <li className="_nav_dropdown_list_item">
-                        <a href="#0" className="_nav_dropdown_link">
+                        <a
+                          href="/login"
+                          className="_nav_dropdown_link"
+                          onClick={handleLogout}
+                        >
                           <div className="_nav_drop_info">
                             <span>
                               <svg
@@ -890,7 +916,7 @@ export function FeedScreen() {
                                 />
                               </svg>
                             </span>
-                            Log Out
+                            {isLoggingOut ? "Logging Out..." : "Log Out"}
                           </div>
                           <button type="submit" className="_nav_drop_btn_link">
                             <svg
