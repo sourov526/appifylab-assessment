@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import type { LikeUser } from "@/types";
+import { useEffect, useRef } from "react";
 
 type LikesModalAnchor = {
   top: number;
@@ -15,8 +15,14 @@ type LikesModalProps = {
   onClose: () => void;
 };
 
-export function LikesModal({ title, likers, anchor, onClose }: LikesModalProps) {
+export function LikesModal({
+  title,
+  likers,
+  anchor,
+  onClose,
+}: LikesModalProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const HORIZONTAL_OFFSET_PX = 150;
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -31,18 +37,23 @@ export function LikesModal({ title, likers, anchor, onClose }: LikesModalProps) 
       }
     }
 
+    function handleScroll() {
+      onClose();
+    }
+
     document.addEventListener("mousedown", handlePointerDown);
     document.addEventListener("keydown", handleEscape);
+    window.addEventListener("scroll", handleScroll, true);
 
     return () => {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", handleScroll, true);
     };
   }, [onClose]);
 
-  const viewportWidth = typeof window === "undefined" ? 1440 : window.innerWidth;
-  const modalWidth = Math.min(360, viewportWidth - 24);
-  const left = Math.max(12 + modalWidth / 2, Math.min(anchor.left, viewportWidth - modalWidth / 2 - 12));
+  const modalWidth = 360;
+  const left = anchor.left + HORIZONTAL_OFFSET_PX;
   const top = Math.max(96, anchor.top);
 
   return (
@@ -54,7 +65,11 @@ export function LikesModal({ title, likers, anchor, onClose }: LikesModalProps) 
       >
         <div className="_likes_modal_head">
           <h5 className="_likes_modal_title">{title}</h5>
-          <button type="button" className="_likes_modal_close" onClick={onClose}>
+          <button
+            type="button"
+            className="_likes_modal_close"
+            onClick={onClose}
+          >
             Close
           </button>
         </div>
