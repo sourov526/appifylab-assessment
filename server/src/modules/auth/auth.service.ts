@@ -10,18 +10,8 @@ type RegisterInput = z.infer<typeof registerSchema>;
 type LoginInput = z.infer<typeof loginSchema>;
 type AuthSession = Session & Partial<SessionData>;
 
-async function persistSession(session: AuthSession, userId: string) {
+function persistSession(session: AuthSession, userId: string) {
   session.userId = userId;
-
-  await new Promise<void>((resolve, reject) => {
-    session.save((error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve();
-    });
-  });
 }
 
 export async function registerUser(input: RegisterInput, session: AuthSession) {
@@ -44,7 +34,7 @@ export async function registerUser(input: RegisterInput, session: AuthSession) {
     }
   });
 
-  await persistSession(session, user.id);
+  persistSession(session, user.id);
 
   return sanitizeUser(user);
 }
@@ -64,7 +54,7 @@ export async function loginUser(input: LoginInput, session: AuthSession) {
     throw new AppError("Invalid email or password", 401);
   }
 
-  await persistSession(session, user.id);
+  persistSession(session, user.id);
 
   return sanitizeUser(user);
 }

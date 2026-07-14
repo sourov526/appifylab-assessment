@@ -1,14 +1,38 @@
 import type { Request, Response } from "express";
+import signature from "cookie-signature";
 import { env } from "../../config/env.js";
 import { loginUser, getAuthenticatedUser, registerUser } from "./auth.service.js";
 
+async function commitSession(request: Request, response: Response) {
+  await new Promise<void>((resolve, reject) => {
+    request.session.save((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+
+  const signedSessionId = `s:${signature.sign(request.sessionID, env.SESSION_SECRET)}`;
+
+  response.cookie(env.SESSION_COOKIE_NAME, signedSessionId, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: env.SESSION_MAX_AGE_MS
+  });
+}
+
 export async function registerController(request: Request, response: Response) {
   const user = await registerUser(request.body, request.session);
+  await commitSession(request, response);
   response.status(201).json({ user });
 }
 
 export async function loginController(request: Request, response: Response) {
   const user = await loginUser(request.body, request.session);
+  await commitSession(request, response);
   response.json({ user });
 }
 
