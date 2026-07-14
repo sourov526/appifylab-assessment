@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import type { Session } from "express-session";
+import type { Session, SessionData } from "express-session";
 import { prisma } from "../../config/db.js";
 import { sanitizeUser } from "../../utils/auth.js";
 import { AppError } from "../../utils/app-error.js";
@@ -8,8 +8,9 @@ import type { z } from "zod";
 
 type RegisterInput = z.infer<typeof registerSchema>;
 type LoginInput = z.infer<typeof loginSchema>;
+type AuthSession = Session & Partial<SessionData>;
 
-async function persistSession(session: Session, userId: string) {
+async function persistSession(session: AuthSession, userId: string) {
   session.userId = userId;
 
   await new Promise<void>((resolve, reject) => {
@@ -23,7 +24,7 @@ async function persistSession(session: Session, userId: string) {
   });
 }
 
-export async function registerUser(input: RegisterInput, session: Session) {
+export async function registerUser(input: RegisterInput, session: AuthSession) {
   const existingUser = await prisma.user.findUnique({
     where: { email: input.email.toLowerCase() }
   });
@@ -48,7 +49,7 @@ export async function registerUser(input: RegisterInput, session: Session) {
   return sanitizeUser(user);
 }
 
-export async function loginUser(input: LoginInput, session: Session) {
+export async function loginUser(input: LoginInput, session: AuthSession) {
   const user = await prisma.user.findUnique({
     where: { email: input.email.toLowerCase() }
   });

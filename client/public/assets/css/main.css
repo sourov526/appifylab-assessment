@@ -5915,6 +5915,11 @@
     position: relative;
     margin: 0 0 50px;
 }
+._comment_details_dynamic {
+    width: 100%;
+    max-width: 100%;
+    min-height: 92px;
+}
 ._comment_details_top {
     display: flex;
 }
@@ -5974,6 +5979,15 @@
 ._comment_reply_num {
     position: absolute;
     bottom: -37px;
+}
+._comment_reply_num_dynamic {
+    left: 0;
+    right: auto;
+    white-space: nowrap;
+}
+._comment_main_reply {
+    margin-top: 20px;
+    margin-left: 60px;
 }
 ._comment_reply_list {
     display: flex;

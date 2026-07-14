@@ -19,8 +19,11 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
   const [commentContent, setCommentContent] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const postImageUrl = resolveApiAssetUrl(post.imageUrl);
   const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const visibleComments = showAllComments ? post.comments : post.comments.slice(-1);
+  const hiddenCommentsCount = post.comments.length - visibleComments.length;
 
   async function handlePostLikeToggle() {
     const result = post.likedByMe ? await unlikePost(post.id) : await likePost(post.id);
@@ -212,14 +215,14 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
         </div>
 
         <div className="_timline_comment_main">
-          {post.comments.length > 1 ? (
+          {hiddenCommentsCount > 0 ? (
             <div className="_previous_comment">
-              <button type="button" className="_previous_comment_txt">
-                View {post.comments.length - 1} previous comments
+              <button type="button" className="_previous_comment_txt" onClick={() => setShowAllComments(true)}>
+                View {hiddenCommentsCount} previous comments
               </button>
             </div>
           ) : null}
-          {post.comments.map((comment) => (
+          {visibleComments.map((comment) => (
             <CommentThread key={comment.id} comment={comment} onCommentUpdate={updateComment} />
           ))}
         </div>
