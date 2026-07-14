@@ -36,15 +36,19 @@ export function RegisterScreen() {
                 </div>
                 <p className="_social_registration_content_para _mar_b8">Get Started Now</p>
                 <h4 className="_social_registration_content_title _titl4 _mar_b50">Registration</h4>
+                <button type="button" className="_social_registration_content_btn _mar_b40">
+                  <img src="/assets/images/google.svg" alt="Google" className="_google_img" />{" "}
+                  <span>Register with google</span>
+                </button>
                 <div className="_social_registration_content_bottom_txt _mar_b40">
-                  <span>Create your account to access the feed</span>
+                  <span>Or</span>
                 </div>
                 <RegisterForm />
                 <div className="row">
                   <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                     <div className="_social_registration_bottom_txt">
                       <p className="_social_registration_bottom_txt_para">
-                        Already have an account? <Link href="/login">Login now</Link>
+                        Dont have an account? <Link href="/login">Create New Account</Link>
                       </p>
                     </div>
                   </div>

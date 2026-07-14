@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import type { Session, SessionData } from "express-session";
-import { prisma } from "../../config/db.js";
-import { sanitizeUser } from "../../utils/auth.js";
-import { AppError } from "../../utils/app-error.js";
-import type { loginSchema, registerSchema } from "./auth.schemas.js";
 import type { z } from "zod";
+import { prisma } from "../../config/db.js";
+import { AppError } from "../../utils/app-error.js";
+import { sanitizeUser } from "../../utils/auth.js";
+import type { loginSchema, registerSchema } from "./auth.schemas.js";
 
 type RegisterInput = z.infer<typeof registerSchema>;
 type LoginInput = z.infer<typeof loginSchema>;
@@ -16,7 +16,7 @@ function persistSession(session: AuthSession, userId: string) {
 
 export async function registerUser(input: RegisterInput, session: AuthSession) {
   const existingUser = await prisma.user.findUnique({
-    where: { email: input.email.toLowerCase() }
+    where: { email: input.email.toLowerCase() },
   });
 
   if (existingUser) {
@@ -30,8 +30,8 @@ export async function registerUser(input: RegisterInput, session: AuthSession) {
       firstName: input.firstName,
       lastName: input.lastName,
       email: input.email.toLowerCase(),
-      passwordHash
-    }
+      passwordHash,
+    },
   });
 
   persistSession(session, user.id);
@@ -41,14 +41,17 @@ export async function registerUser(input: RegisterInput, session: AuthSession) {
 
 export async function loginUser(input: LoginInput, session: AuthSession) {
   const user = await prisma.user.findUnique({
-    where: { email: input.email.toLowerCase() }
+    where: { email: input.email.toLowerCase() },
   });
 
   if (!user) {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const passwordMatches = await bcrypt.compare(input.password, user.passwordHash);
+  const passwordMatches = await bcrypt.compare(
+    input.password,
+    user.passwordHash,
+  );
 
   if (!passwordMatches) {
     throw new AppError("Invalid email or password", 401);
@@ -61,7 +64,7 @@ export async function loginUser(input: LoginInput, session: AuthSession) {
 
 export async function getAuthenticatedUser(userId: string) {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   });
 
   if (!user) {

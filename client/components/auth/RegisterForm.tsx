@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ApiError, register } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export function RegisterForm() {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [agreed, setAgreed] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,11 @@ export function RegisterForm() {
       router.push("/feed");
       router.refresh();
     } catch (caughtError) {
-      setError(caughtError instanceof ApiError ? caughtError.message : "Unable to register");
+      setError(
+        caughtError instanceof ApiError
+          ? caughtError.message
+          : "Unable to register",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -46,9 +50,11 @@ export function RegisterForm() {
   return (
     <form className="_social_registration_form" onSubmit={handleSubmit}>
       <div className="row">
-        <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+        <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
           <div className="_social_registration_form_input _mar_b14">
-            <label className="_social_registration_label _mar_b8">First Name</label>
+            <label className="_social_registration_label _mar_b8">
+              First Name
+            </label>
             <input
               type="text"
               className="form-control _social_registration_input"
@@ -59,9 +65,11 @@ export function RegisterForm() {
             />
           </div>
         </div>
-        <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+        <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
           <div className="_social_registration_form_input _mar_b14">
-            <label className="_social_registration_label _mar_b8">Last Name</label>
+            <label className="_social_registration_label _mar_b8">
+              Last Name
+            </label>
             <input
               type="text"
               className="form-control _social_registration_input"
@@ -87,7 +95,9 @@ export function RegisterForm() {
         </div>
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
           <div className="_social_registration_form_input _mar_b14">
-            <label className="_social_registration_label _mar_b8">Password</label>
+            <label className="_social_registration_label _mar_b8">
+              Password
+            </label>
             <input
               type="password"
               className="form-control _social_registration_input"
@@ -100,12 +110,16 @@ export function RegisterForm() {
         </div>
         <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
           <div className="_social_registration_form_input _mar_b14">
-            <label className="_social_registration_label _mar_b8">Repeat Password</label>
+            <label className="_social_registration_label _mar_b8">
+              Repeat Password
+            </label>
             <input
               type="password"
               className="form-control _social_registration_input"
               value={form.confirmPassword}
-              onChange={(event) => updateField("confirmPassword", event.target.value)}
+              onChange={(event) =>
+                updateField("confirmPassword", event.target.value)
+              }
               autoComplete="new-password"
               required
             />
@@ -122,7 +136,10 @@ export function RegisterForm() {
               checked={agreed}
               onChange={(event) => setAgreed(event.target.checked)}
             />
-            <label className="form-check-label _social_registration_form_check_label" htmlFor="termsCheck">
+            <label
+              className="form-check-label _social_registration_form_check_label"
+              htmlFor="termsCheck"
+            >
               I agree to terms &amp; conditions
             </label>
           </div>
@@ -132,8 +149,12 @@ export function RegisterForm() {
       <div className="row">
         <div className="col-lg-12 col-md-12 col-xl-12 col-sm-12">
           <div className="_social_registration_form_btn _mar_t40 _mar_b60">
-            <button type="submit" className="_social_registration_form_btn_link _btn1" disabled={isSubmitting}>
-              {isSubmitting ? "Creating account..." : "Create account"}
+            <button
+              type="submit"
+              className="_social_registration_form_btn_link _btn1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating account..." : "Login now"}
             </button>
           </div>
         </div>
