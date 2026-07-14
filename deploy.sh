@@ -58,8 +58,12 @@ require_command() {
 require_command docker
 require_command openssl
 
-if ! docker compose version >/dev/null 2>&1; then
-  echo "Docker Compose plugin is required but not available." >&2
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_CMD="docker-compose"
+else
+  echo "Docker Compose is not available. Install either 'docker compose' or 'docker-compose'." >&2
   exit 1
 fi
 
@@ -136,9 +140,9 @@ echo "  Node env: $NODE_ENV"
 echo "  Frontend: $CLIENT_ORIGIN"
 echo "  API:      $NEXT_PUBLIC_API_URL"
 
-docker compose pull postgres redis
-docker compose up -d --build
-docker compose ps
+$COMPOSE_CMD pull postgres redis
+$COMPOSE_CMD up -d --build
+$COMPOSE_CMD ps
 
 echo
 echo "Deployment complete."
