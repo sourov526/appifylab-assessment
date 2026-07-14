@@ -1,8 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { createComment, likePost, resolveApiAssetUrl, unlikePost } from "@/lib/api";
+import {
+  createComment,
+  likePost,
+  resolveApiAssetUrl,
+  unlikePost,
+} from "@/lib/api";
 import type { Comment, FeedPost } from "@/types";
+import { useRef, useState } from "react";
 import { CommentThread } from "./CommentThread";
 import { LikesModal } from "./LikesModal";
 
@@ -19,14 +24,19 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
   const [commentContent, setCommentContent] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
+  const [likesAnchor, setLikesAnchor] = useState({ top: 96, left: 180 });
   const [showAllComments, setShowAllComments] = useState(false);
   const postImageUrl = resolveApiAssetUrl(post.imageUrl);
   const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const visibleComments = showAllComments ? post.comments : post.comments.slice(-1);
+  const visibleComments = showAllComments
+    ? post.comments
+    : post.comments.slice(-1);
   const hiddenCommentsCount = post.comments.length - visibleComments.length;
 
   async function handlePostLikeToggle() {
-    const result = post.likedByMe ? await unlikePost(post.id) : await likePost(post.id);
+    const result = post.likedByMe
+      ? await unlikePost(post.id)
+      : await likePost(post.id);
     onPostUpdate(post.id, (current) => ({ ...current, ...result }));
   }
 
@@ -38,10 +48,12 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
 
     setIsSubmittingComment(true);
     try {
-      const { comment } = await createComment(post.id, { content: commentContent.trim() });
+      const { comment } = await createComment(post.id, {
+        content: commentContent.trim(),
+      });
       onPostUpdate(post.id, (current) => ({
         ...current,
-        comments: [...current.comments, comment]
+        comments: [...current.comments, comment],
       }));
       setCommentContent("");
     } finally {
@@ -49,11 +61,25 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
     }
   }
 
-  function updateComment(commentId: string, updater: (comment: Comment) => Comment) {
+  function updateComment(
+    commentId: string,
+    updater: (comment: Comment) => Comment,
+  ) {
     onPostUpdate(post.id, (current) => ({
       ...current,
-      comments: current.comments.map((comment) => (comment.id === commentId ? updater(comment) : comment))
+      comments: current.comments.map((comment) =>
+        comment.id === commentId ? updater(comment) : comment,
+      ),
     }));
+  }
+
+  function openLikesNear(element: HTMLElement) {
+    const rect = element.getBoundingClientRect();
+    setLikesAnchor({
+      top: rect.top - 6,
+      left: rect.left + rect.width / 2,
+    });
+    setShowLikes(true);
   }
 
   return (
@@ -63,20 +89,36 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           <div className="_feed_inner_timeline_post_top">
             <div className="_feed_inner_timeline_post_box">
               <div className="_feed_inner_timeline_post_box_image">
-                <img src="/assets/images/txt_img.png" alt="Author" className="_comment_img1" />
+                <img
+                  src="/assets/images/txt_img.png"
+                  alt="Author"
+                  className="_comment_img1"
+                />
               </div>
               <div className="_feed_inner_timeline_post_box_txt">
                 <h4 className="_feed_inner_timeline_post_box_title">
                   {post.author.firstName} {post.author.lastName}
                 </h4>
                 <p className="_feed_inner_timeline_post_box_para">
-                  {formatDateTime(post.createdAt)} . <span>{post.visibility === "PUBLIC" ? "Public" : "Private"}</span>
+                  {formatDateTime(post.createdAt)} .{" "}
+                  <span>
+                    {post.visibility === "PUBLIC" ? "Public" : "Private"}
+                  </span>
                 </p>
               </div>
             </div>
             <div className="_feed_inner_timeline_post_box_dropdown">
-              <button type="button" className="_feed_timeline_post_dropdown_link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="4" height="17" fill="none" viewBox="0 0 4 17">
+              <button
+                type="button"
+                className="_feed_timeline_post_dropdown_link"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="4"
+                  height="17"
+                  fill="none"
+                  viewBox="0 0 4 17"
+                >
                   <circle cx="2" cy="2" r="2" fill="#C4C4C4" />
                   <circle cx="2" cy="8" r="2" fill="#C4C4C4" />
                   <circle cx="2" cy="15" r="2" fill="#C4C4C4" />
@@ -99,18 +141,24 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
             className="_feed_inner_timeline_total_reacts_image"
             role="button"
             tabIndex={0}
-            onClick={() => setShowLikes(true)}
+            onClick={(event) => openLikesNear(event.currentTarget)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
-                setShowLikes(true);
+                openLikesNear(event.currentTarget);
               }
             }}
           >
             {post.likesCount > 0 ? (
               <>
-                <img src="/assets/images/react_img1.png" alt="Reaction" className="_react_img1" />
-                <p className="_feed_inner_timeline_total_reacts_para">{post.likesCount}</p>
+                <img
+                  src="/assets/images/react_img1.png"
+                  alt="Reaction"
+                  className="_react_img1"
+                />
+                <p className="_feed_inner_timeline_total_reacts_para">
+                  {post.likesCount}
+                </p>
               </>
             ) : null}
           </div>
@@ -132,11 +180,29 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           >
             <span className="_feed_inner_timeline_reaction_link">
               <span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 19 19">
-                  <path fill="#FFCC4D" d="M9.5 19a9.5 9.5 0 100-19 9.5 9.5 0 000 19z" />
-                  <path fill="#664500" d="M9.5 11.083c-1.912 0-3.181-.222-4.75-.527-.358-.07-1.056 0-1.056 1.055 0 2.111 2.425 4.75 5.806 4.75 3.38 0 5.805-2.639 5.805-4.75 0-1.055-.697-1.125-1.055-1.055-1.57.305-2.838.527-4.75.527z" />
-                  <path fill="#fff" d="M4.75 11.611s1.583.528 4.75.528 4.75-.528 4.75-.528-1.056 2.111-4.75 2.111-4.75-2.11-4.75-2.11z" />
-                  <path fill="#664500" d="M6.333 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847zM12.667 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="19"
+                  height="19"
+                  fill="none"
+                  viewBox="0 0 19 19"
+                >
+                  <path
+                    fill="#FFCC4D"
+                    d="M9.5 19a9.5 9.5 0 100-19 9.5 9.5 0 000 19z"
+                  />
+                  <path
+                    fill="#664500"
+                    d="M9.5 11.083c-1.912 0-3.181-.222-4.75-.527-.358-.07-1.056 0-1.056 1.055 0 2.111 2.425 4.75 5.806 4.75 3.38 0 5.805-2.639 5.805-4.75 0-1.055-.697-1.125-1.055-1.055-1.57.305-2.838.527-4.75.527z"
+                  />
+                  <path
+                    fill="#fff"
+                    d="M4.75 11.611s1.583.528 4.75.528 4.75-.528 4.75-.528-1.056 2.111-4.75 2.111-4.75-2.11-4.75-2.11z"
+                  />
+                  <path
+                    fill="#664500"
+                    d="M6.333 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847zM12.667 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847z"
+                  />
                 </svg>
                 {post.likedByMe ? "Haha" : "Like"}
               </span>
@@ -149,19 +215,49 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
           >
             <span className="_feed_inner_timeline_reaction_link">
               <span>
-                <svg className="_reaction_svg" xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 21 21">
-                  <path stroke="#000" d="M1 10.5c0-.464 0-.696.009-.893A9 9 0 019.607 1.01C9.804 1 10.036 1 10.5 1v0c.464 0 .696 0 .893.009a9 9 0 018.598 8.598c.009.197.009.429.009.893v6.046c0 1.36 0 2.041-.317 2.535a2 2 0 01-.602.602c-.494.317-1.174.317-2.535.317H10.5c-.464 0-.696 0-.893-.009a9 9 0 01-8.598-8.598C1 11.196 1 10.964 1 10.5v0z" />
-                  <path stroke="#000" strokeLinecap="round" strokeLinejoin="round" d="M6.938 9.313h7.125M10.5 14.063h3.563" />
+                <svg
+                  className="_reaction_svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="21"
+                  height="21"
+                  fill="none"
+                  viewBox="0 0 21 21"
+                >
+                  <path
+                    stroke="#000"
+                    d="M1 10.5c0-.464 0-.696.009-.893A9 9 0 019.607 1.01C9.804 1 10.036 1 10.5 1v0c.464 0 .696 0 .893.009a9 9 0 018.598 8.598c.009.197.009.429.009.893v6.046c0 1.36 0 2.041-.317 2.535a2 2 0 01-.602.602c-.494.317-1.174.317-2.535.317H10.5c-.464 0-.696 0-.893-.009a9 9 0 01-8.598-8.598C1 11.196 1 10.964 1 10.5v0z"
+                  />
+                  <path
+                    stroke="#000"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.938 9.313h7.125M10.5 14.063h3.563"
+                  />
                 </svg>
                 Comment
               </span>
             </span>
           </button>
-          <button type="button" className="_feed_inner_timeline_reaction_share _feed_reaction" onClick={() => setShowLikes(true)}>
+          <button
+            type="button"
+            className="_feed_inner_timeline_reaction_share _feed_reaction"
+            onClick={(event) => openLikesNear(event.currentTarget)}
+          >
             <span className="_feed_inner_timeline_reaction_link">
               <span>
-                <svg className="_reaction_svg" xmlns="http://www.w3.org/2000/svg" width="24" height="21" fill="none" viewBox="0 0 24 21">
-                  <path stroke="#000" strokeLinejoin="round" d="M23 10.5L12.917 1v5.429C3.267 6.429 1 13.258 1 20c2.785-3.52 5.248-5.429 11.917-5.429V20L23 10.5z" />
+                <svg
+                  className="_reaction_svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="21"
+                  fill="none"
+                  viewBox="0 0 24 21"
+                >
+                  <path
+                    stroke="#000"
+                    strokeLinejoin="round"
+                    d="M23 10.5L12.917 1v5.429C3.267 6.429 1 13.258 1 20c2.785-3.52 5.248-5.429 11.917-5.429V20L23 10.5z"
+                  />
                 </svg>
                 Share
               </span>
@@ -171,10 +267,17 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
 
         <div className="_feed_inner_timeline_cooment_area">
           <div className="_feed_inner_comment_box">
-            <form className="_feed_inner_comment_box_form" onSubmit={handleCommentSubmit}>
+            <form
+              className="_feed_inner_comment_box_form"
+              onSubmit={handleCommentSubmit}
+            >
               <div className="_feed_inner_comment_box_content">
                 <div className="_feed_inner_comment_box_content_image">
-                  <img src="/assets/images/comment_img.png" alt="Comment" className="_comment_img" />
+                  <img
+                    src="/assets/images/comment_img.png"
+                    alt="Comment"
+                    className="_comment_img"
+                  />
                 </div>
                 <div className="_feed_inner_comment_box_content_txt">
                   <textarea
@@ -187,8 +290,18 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
                 </div>
               </div>
               <div className="_feed_inner_comment_box_icon">
-                <button type="submit" className="_feed_inner_comment_box_icon_btn" disabled={isSubmittingComment}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <button
+                  type="submit"
+                  className="_feed_inner_comment_box_icon_btn"
+                  disabled={isSubmittingComment}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    viewBox="0 0 16 16"
+                  >
                     <path
                       fill="#000"
                       fillOpacity=".46"
@@ -198,8 +311,18 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
                     />
                   </svg>
                 </button>
-                <button type="button" className="_feed_inner_comment_box_icon_btn" aria-label="Comment media">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <button
+                  type="button"
+                  className="_feed_inner_comment_box_icon_btn"
+                  aria-label="Comment media"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    viewBox="0 0 16 16"
+                  >
                     <path
                       fill="#000"
                       fillOpacity=".46"
@@ -217,18 +340,33 @@ export function PostCard({ post, onPostUpdate }: PostCardProps) {
         <div className="_timline_comment_main">
           {hiddenCommentsCount > 0 ? (
             <div className="_previous_comment">
-              <button type="button" className="_previous_comment_txt" onClick={() => setShowAllComments(true)}>
+              <button
+                type="button"
+                className="_previous_comment_txt"
+                onClick={() => setShowAllComments(true)}
+              >
                 View {hiddenCommentsCount} previous comments
               </button>
             </div>
           ) : null}
           {visibleComments.map((comment) => (
-            <CommentThread key={comment.id} comment={comment} onCommentUpdate={updateComment} />
+            <CommentThread
+              key={comment.id}
+              comment={comment}
+              onCommentUpdate={updateComment}
+            />
           ))}
         </div>
       </div>
 
-      {showLikes ? <LikesModal title="Post likes" likers={post.likers} onClose={() => setShowLikes(false)} /> : null}
+      {showLikes ? (
+        <LikesModal
+          title="Post likes"
+          likers={post.likers}
+          anchor={likesAnchor}
+          onClose={() => setShowLikes(false)}
+        />
+      ) : null}
     </>
   );
 }

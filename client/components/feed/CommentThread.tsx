@@ -39,7 +39,7 @@ function ReplyItem({
 }: {
   reply: Reply;
   onLikeToggle: (reply: Reply) => Promise<void>;
-  onShowLikes: (reply: Reply) => void;
+  onShowLikes: (reply: Reply, element: HTMLElement) => void;
 }) {
   return (
     <div className="_comment_main _comment_main_reply">
@@ -73,7 +73,11 @@ function ReplyItem({
                   </svg>
                 </span>
               </div>
-              <button type="button" className="_total border-0 bg-transparent p-0" onClick={() => onShowLikes(reply)}>
+              <button
+                type="button"
+                className="_total border-0 bg-transparent p-0"
+                onClick={(event) => onShowLikes(reply, event.currentTarget)}
+              >
                 {reply.likesCount}
               </button>
             </div>
@@ -92,7 +96,11 @@ function ReplyItem({
                   </button>
                 </li>
                 <li>
-                  <button type="button" className="border-0 bg-transparent p-0" onClick={() => onShowLikes(reply)}>
+                  <button
+                    type="button"
+                    className="border-0 bg-transparent p-0"
+                    onClick={(event) => onShowLikes(reply, event.currentTarget)}
+                  >
                     <span>Share</span>
                   </button>
                 </li>
@@ -114,6 +122,7 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
   const [likesTarget, setLikesTarget] = useState<{ title: string; likers: Reply["likers"] | Comment["likers"] } | null>(
     null
   );
+  const [likesAnchor, setLikesAnchor] = useState({ top: 0, left: 0 });
 
   async function handleCommentLikeToggle() {
     const result = comment.likedByMe ? await unlikeComment(comment.id) : await likeComment(comment.id);
@@ -145,6 +154,19 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
       ...current,
       replies: current.replies.map((item) => (item.id === reply.id ? { ...item, ...result } : item))
     }));
+  }
+
+  function openLikesNear(
+    title: string,
+    likers: Reply["likers"] | Comment["likers"],
+    element: HTMLElement
+  ) {
+    const rect = element.getBoundingClientRect();
+    setLikesAnchor({
+      top: rect.top - 6,
+      left: rect.left + rect.width / 2
+    });
+    setLikesTarget({ title, likers });
   }
 
   return (
@@ -183,7 +205,7 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
                 <button
                   type="button"
                   className="_total border-0 bg-transparent p-0"
-                  onClick={() => setLikesTarget({ title: "Comment likes", likers: comment.likers })}
+                  onClick={(event) => openLikesNear("Comment likes", comment.likers, event.currentTarget)}
                 >
                   {comment.likesCount}
                 </button>
@@ -206,7 +228,7 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
                     <button
                       type="button"
                       className="border-0 bg-transparent p-0"
-                      onClick={() => setLikesTarget({ title: "Comment likes", likers: comment.likers })}
+                      onClick={(event) => openLikesNear("Comment likes", comment.likers, event.currentTarget)}
                     >
                       <span>Share</span>
                     </button>
@@ -224,7 +246,7 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
               key={reply.id}
               reply={reply}
               onLikeToggle={handleReplyLikeToggle}
-              onShowLikes={(nextReply) => setLikesTarget({ title: "Reply likes", likers: nextReply.likers })}
+              onShowLikes={(nextReply, element) => openLikesNear("Reply likes", nextReply.likers, element)}
             />
           ))}
 
@@ -273,7 +295,12 @@ export function CommentThread({ comment, onCommentUpdate }: CommentThreadProps) 
       </div>
 
       {likesTarget ? (
-        <LikesModal title={likesTarget.title} likers={likesTarget.likers} onClose={() => setLikesTarget(null)} />
+        <LikesModal
+          title={likesTarget.title}
+          likers={likesTarget.likers}
+          anchor={likesAnchor}
+          onClose={() => setLikesTarget(null)}
+        />
       ) : null}
     </>
   );
