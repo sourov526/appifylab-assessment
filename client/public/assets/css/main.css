@@ -190,8 +190,8 @@
   pointer-events: auto;
 }
 ._likes_modal_card_anchor {
-    position: fixed;
-    transform: translate(-50%, -100%);
+  position: fixed;
+  transform: translate(-50%, -100%);
 }
 ._likes_modal_head {
   display: flex;
@@ -2025,6 +2025,9 @@
   border-radius: 18px;
   padding: 4px 9px;
 }
+._feed_inner_comment_box_reply_gap {
+  margin-bottom: 16px;
+}
 ._feed_inner_comment_box_form {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -2037,6 +2040,7 @@
   justify-content: space-between;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 ._comment_img {
   max-width: 26px;

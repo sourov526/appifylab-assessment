@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { createReply, likeComment, likeReply, unlikeComment, unlikeReply } from "@/lib/api";
+import {
+  createReply,
+  likeComment,
+  likeReply,
+  unlikeComment,
+  unlikeReply,
+} from "@/lib/api";
 import { getUserAvatarSrc } from "@/lib/avatar";
 import type { AuthUser, Comment, Reply } from "@/types";
+import { useState } from "react";
 import { LikesModal } from "./LikesModal";
 
 type CommentThreadProps = {
   comment: Comment;
   currentUser: AuthUser | null;
-  onCommentUpdate: (commentId: string, updater: (comment: Comment) => Comment) => void;
+  onCommentUpdate: (
+    commentId: string,
+    updater: (comment: Comment) => Comment,
+  ) => void;
 };
 
 function formatDateTime(value: string) {
@@ -37,7 +46,7 @@ function formatDateTime(value: string) {
 function ReplyItem({
   reply,
   onLikeToggle,
-  onShowLikes
+  onShowLikes,
 }: {
   reply: Reply;
   onLikeToggle: (reply: Reply) => Promise<void>;
@@ -47,7 +56,11 @@ function ReplyItem({
     <div className="_comment_main _comment_main_reply">
       <div className="_comment_image">
         <span className="_comment_image_link">
-          <img src={getUserAvatarSrc(reply.author)} alt="Reply author" className="_comment_img1" />
+          <img
+            src={getUserAvatarSrc(reply.author)}
+            alt="Reply author"
+            className="_comment_img1"
+          />
         </span>
       </div>
       <div className="_comment_area">
@@ -70,7 +83,18 @@ function ReplyItem({
             <div className="_total_reactions">
               <div className="_total_react">
                 <span className="_reaction_like">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-thumbs-up">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="feather feather-thumbs-up"
+                  >
                     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                   </svg>
                 </span>
@@ -88,7 +112,11 @@ function ReplyItem({
             <div className="_comment_reply_num _comment_reply_num_dynamic">
               <ul className="_comment_reply_list">
                 <li>
-                  <button type="button" className="border-0 bg-transparent p-0" onClick={() => onLikeToggle(reply)}>
+                  <button
+                    type="button"
+                    className="border-0 bg-transparent p-0"
+                    onClick={() => onLikeToggle(reply)}
+                  >
                     <span>{reply.likedByMe ? "Unlike." : "Like."}</span>
                   </button>
                 </li>
@@ -107,7 +135,9 @@ function ReplyItem({
                   </button>
                 </li>
                 <li>
-                  <span className="_time_link">.{formatDateTime(reply.createdAt)}</span>
+                  <span className="_time_link">
+                    .{formatDateTime(reply.createdAt)}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -118,16 +148,23 @@ function ReplyItem({
   );
 }
 
-export function CommentThread({ comment, currentUser, onCommentUpdate }: CommentThreadProps) {
+export function CommentThread({
+  comment,
+  currentUser,
+  onCommentUpdate,
+}: CommentThreadProps) {
   const [replyContent, setReplyContent] = useState("");
   const [isReplying, setIsReplying] = useState(false);
-  const [likesTarget, setLikesTarget] = useState<{ title: string; likers: Reply["likers"] | Comment["likers"] } | null>(
-    null
-  );
+  const [likesTarget, setLikesTarget] = useState<{
+    title: string;
+    likers: Reply["likers"] | Comment["likers"];
+  } | null>(null);
   const [likesAnchor, setLikesAnchor] = useState({ top: 0, left: 0 });
 
   async function handleCommentLikeToggle() {
-    const result = comment.likedByMe ? await unlikeComment(comment.id) : await likeComment(comment.id);
+    const result = comment.likedByMe
+      ? await unlikeComment(comment.id)
+      : await likeComment(comment.id);
     onCommentUpdate(comment.id, (current) => ({ ...current, ...result }));
   }
 
@@ -139,10 +176,12 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
 
     setIsReplying(true);
     try {
-      const { reply } = await createReply(comment.id, { content: replyContent.trim() });
+      const { reply } = await createReply(comment.id, {
+        content: replyContent.trim(),
+      });
       onCommentUpdate(comment.id, (current) => ({
         ...current,
-        replies: [...current.replies, reply]
+        replies: [...current.replies, reply],
       }));
       setReplyContent("");
     } finally {
@@ -151,22 +190,26 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
   }
 
   async function handleReplyLikeToggle(reply: Reply) {
-    const result = reply.likedByMe ? await unlikeReply(reply.id) : await likeReply(reply.id);
+    const result = reply.likedByMe
+      ? await unlikeReply(reply.id)
+      : await likeReply(reply.id);
     onCommentUpdate(comment.id, (current) => ({
       ...current,
-      replies: current.replies.map((item) => (item.id === reply.id ? { ...item, ...result } : item))
+      replies: current.replies.map((item) =>
+        item.id === reply.id ? { ...item, ...result } : item,
+      ),
     }));
   }
 
   function openLikesNear(
     title: string,
     likers: Reply["likers"] | Comment["likers"],
-    element: HTMLElement
+    element: HTMLElement,
   ) {
     const rect = element.getBoundingClientRect();
     setLikesAnchor({
       top: rect.top - 6,
-      left: rect.left + rect.width / 2
+      left: rect.left + rect.width / 2,
     });
     setLikesTarget({ title, likers });
   }
@@ -176,7 +219,11 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
       <div className="_comment_main">
         <div className="_comment_image">
           <span className="_comment_image_link">
-            <img src={getUserAvatarSrc(comment.author)} alt="Comment author" className="_comment_img1" />
+            <img
+              src={getUserAvatarSrc(comment.author)}
+              alt="Comment author"
+              className="_comment_img1"
+            />
           </span>
         </div>
         <div className="_comment_area">
@@ -197,17 +244,34 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
             </div>
             {comment.likesCount > 0 ? (
               <div className="_total_reactions">
-              <div className="_total_react">
-                <span className="_reaction_like">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-thumbs-up">
-                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                  </svg>
-                </span>
+                <div className="_total_react">
+                  <span className="_reaction_like">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="feather feather-thumbs-up"
+                    >
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                    </svg>
+                  </span>
                 </div>
                 <button
                   type="button"
                   className="_total border-0 bg-transparent p-0"
-                  onClick={(event) => openLikesNear("Comment likes", comment.likers, event.currentTarget)}
+                  onClick={(event) =>
+                    openLikesNear(
+                      "Comment likes",
+                      comment.likers,
+                      event.currentTarget,
+                    )
+                  }
                 >
                   {comment.likesCount}
                 </button>
@@ -217,12 +281,19 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
               <div className="_comment_reply_num _comment_reply_num_dynamic">
                 <ul className="_comment_reply_list">
                   <li>
-                    <button type="button" className="border-0 bg-transparent p-0" onClick={handleCommentLikeToggle}>
+                    <button
+                      type="button"
+                      className="border-0 bg-transparent p-0"
+                      onClick={handleCommentLikeToggle}
+                    >
                       <span>{comment.likedByMe ? "Unlike." : "Like."}</span>
                     </button>
                   </li>
                   <li>
-                    <button type="button" className="border-0 bg-transparent p-0">
+                    <button
+                      type="button"
+                      className="border-0 bg-transparent p-0"
+                    >
                       <span>Reply.</span>
                     </button>
                   </li>
@@ -230,13 +301,21 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
                     <button
                       type="button"
                       className="border-0 bg-transparent p-0"
-                      onClick={(event) => openLikesNear("Comment likes", comment.likers, event.currentTarget)}
+                      onClick={(event) =>
+                        openLikesNear(
+                          "Comment likes",
+                          comment.likers,
+                          event.currentTarget,
+                        )
+                      }
                     >
                       <span>Share</span>
                     </button>
                   </li>
                   <li>
-                    <span className="_time_link">.{formatDateTime(comment.createdAt)}</span>
+                    <span className="_time_link">
+                      .{formatDateTime(comment.createdAt)}
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -248,16 +327,25 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
               key={reply.id}
               reply={reply}
               onLikeToggle={handleReplyLikeToggle}
-              onShowLikes={(nextReply, element) => openLikesNear("Reply likes", nextReply.likers, element)}
+              onShowLikes={(nextReply, element) =>
+                openLikesNear("Reply likes", nextReply.likers, element)
+              }
             />
           ))}
 
-          <div className="_feed_inner_comment_box">
-            <form className="_feed_inner_comment_box_form" onSubmit={handleReplySubmit}>
+          <div className="_feed_inner_comment_box _feed_inner_comment_box_reply_gap">
+            <form
+              className="_feed_inner_comment_box_form"
+              onSubmit={handleReplySubmit}
+            >
               <div className="_feed_inner_comment_box_content">
                 <div className="_feed_inner_comment_box_content_image">
                   <img
-                    src={currentUser ? getUserAvatarSrc(currentUser) : "/assets/images/comment_img.png"}
+                    src={
+                      currentUser
+                        ? getUserAvatarSrc(currentUser)
+                        : "/assets/images/comment_img.png"
+                    }
                     alt="Reply"
                     className="_comment_img"
                   />
@@ -272,8 +360,18 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
                 </div>
               </div>
               <div className="_feed_inner_comment_box_icon">
-                <button type="button" className="_feed_inner_comment_box_icon_btn" aria-label="Voice input">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <button
+                  type="button"
+                  className="_feed_inner_comment_box_icon_btn"
+                  aria-label="Voice input"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    viewBox="0 0 16 16"
+                  >
                     <path
                       fill="#000"
                       fillOpacity=".46"
@@ -283,8 +381,18 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
                     />
                   </svg>
                 </button>
-                <button type="button" className="_feed_inner_comment_box_icon_btn" aria-label="Reply media">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <button
+                  type="button"
+                  className="_feed_inner_comment_box_icon_btn"
+                  aria-label="Reply media"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    viewBox="0 0 16 16"
+                  >
                     <path
                       fill="#000"
                       fillOpacity=".46"
@@ -294,8 +402,19 @@ export function CommentThread({ comment, currentUser, onCommentUpdate }: Comment
                     />
                   </svg>
                 </button>
-                <button type="submit" className="_feed_inner_comment_box_icon_btn" aria-label="Send reply" disabled={isReplying}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <button
+                  type="submit"
+                  className="_feed_inner_comment_box_icon_btn"
+                  aria-label="Send reply"
+                  disabled={isReplying}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    viewBox="0 0 16 16"
+                  >
                     <path
                       fill="#000"
                       fillOpacity=".46"
