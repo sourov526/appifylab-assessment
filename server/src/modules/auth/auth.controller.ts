@@ -18,7 +18,7 @@ async function commitSession(request: Request, response: Response) {
 
   response.cookie(env.SESSION_COOKIE_NAME, signedSessionId, {
     httpOnly: true,
-    secure: env.NODE_ENV === "production",
+    secure: env.SESSION_COOKIE_SECURE,
     sameSite: "lax",
     maxAge: env.SESSION_MAX_AGE_MS
   });

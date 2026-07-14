@@ -30,7 +30,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: env.NODE_ENV === "production",
+      secure: env.SESSION_COOKIE_SECURE,
       sameSite: "lax",
       maxAge: env.SESSION_MAX_AGE_MS
     }
