@@ -32,7 +32,7 @@ RUN npm ci --omit=dev \
   && npm cache clean --force
 COPY --from=builder /app/server/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/server/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/server/dist ./server/dist
-RUN mkdir -p /app/server/uploads
+RUN mkdir -p /app/server/dist /app/server/uploads
+COPY --from=builder /app/server/dist/ ./dist/
 EXPOSE 4000
 CMD ["sh", "-c", "npx prisma migrate deploy --schema ../prisma/schema.prisma && node dist/server.js"]
