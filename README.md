@@ -171,3 +171,4 @@ docker compose --env-file .env.local down
 - The auth pages follow the provided design.
 - The feed keeps the provided design while using the backend features.
 - Uploaded images are served from the Express server under `/uploads`.
+- For now I uploaded images to the `/uploads`. but in real production this can be uploade AWS S3 or other cloud store
