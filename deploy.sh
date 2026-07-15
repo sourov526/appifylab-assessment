@@ -82,7 +82,7 @@ run_compose() {
   if [[ "$COMPOSE_CMD" == "docker compose" ]]; then
     docker compose --env-file "$MODE_ENV_FILE" "$@"
   else
-    docker-compose --env-file "$MODE_ENV_FILE" "$@"
+    docker-compose "$@"
   fi
 }
 
