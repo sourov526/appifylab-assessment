@@ -27,9 +27,11 @@ RUN apt-get update \
 COPY prisma ./prisma
 COPY --from=builder /app/server/package.json ./server/package.json
 COPY --from=builder /app/server/package-lock.json ./server/package-lock.json
-COPY --from=builder /app/server/node_modules ./server/node_modules
+WORKDIR /app/server
+RUN npm ci --omit=dev \
+  && npx prisma generate --schema ../prisma/schema.prisma \
+  && npm cache clean --force
 COPY --from=builder /app/server/dist ./server/dist
 RUN mkdir -p /app/server/uploads
-WORKDIR /app/server
 EXPOSE 4000
 CMD ["sh", "-c", "npx prisma migrate deploy --schema ../prisma/schema.prisma && node dist/server.js"]
