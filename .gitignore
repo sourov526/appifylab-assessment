@@ -2,6 +2,9 @@ node_modules/
 .next/
 .env
 .env.local
+.env.production
+.env.*
+!.env.local.example
+!.env.production.example
 .DS_Store
-EOF
 tsconfig.tsbuildinfo
