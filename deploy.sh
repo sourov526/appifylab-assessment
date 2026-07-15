@@ -86,6 +86,47 @@ run_compose() {
   fi
 }
 
+ensure_swap_for_low_memory_host() {
+  local mem_total_mb swap_total_mb swap_file swap_mb
+
+  [[ "${AUTO_CREATE_SWAP:-true}" == "true" ]] || return 0
+  [[ "$MODE" == "production" ]] || return 0
+  command -v sudo >/dev/null 2>&1 || return 0
+  [[ -r /proc/meminfo ]] || return 0
+
+  mem_total_mb="$(awk '/MemTotal/ { print int($2 / 1024) }' /proc/meminfo)"
+  swap_total_mb="$(awk '/SwapTotal/ { print int($2 / 1024) }' /proc/meminfo)"
+
+  if (( mem_total_mb >= 1700 || swap_total_mb > 0 )); then
+    return 0
+  fi
+
+  swap_mb="${DEPLOY_SWAP_MB:-2048}"
+  swap_file="${DEPLOY_SWAP_FILE:-/swapfile}"
+
+  echo "Low-memory host detected (${mem_total_mb}MB RAM, ${swap_total_mb}MB swap)."
+  echo "Creating ${swap_mb}MB swap at ${swap_file} for Docker builds."
+
+  if ! sudo test -f "$swap_file"; then
+    if command -v fallocate >/dev/null 2>&1; then
+      sudo fallocate -l "${swap_mb}M" "$swap_file"
+    else
+      sudo dd if=/dev/zero of="$swap_file" bs=1M count="$swap_mb" status=progress
+    fi
+
+    sudo chmod 600 "$swap_file"
+    sudo mkswap "$swap_file"
+  fi
+
+  if ! sudo swapon --show | grep -q "$swap_file"; then
+    sudo swapon "$swap_file"
+  fi
+
+  if ! sudo grep -qF "$swap_file none swap sw 0 0" /etc/fstab; then
+    echo "$swap_file none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
+  fi
+}
+
 wait_for_postgres() {
   local retries=30
 
@@ -166,6 +207,8 @@ export SESSION_COOKIE_SECURE
 export SESSION_MAX_AGE_MS
 export UPLOAD_DIR
 
+ensure_swap_for_low_memory_host
+
 echo "Deploying in ${MODE} mode with:"
 echo "  Node env: $NODE_ENV"
 echo "  Env file: $MODE_ENV_FILE"
@@ -181,7 +224,13 @@ if [[ "$MODE" == "local" ]]; then
   npm run prisma:migrate
 fi
 
-run_compose up -d --build
+if [[ "$MODE" == "production" ]]; then
+  run_compose build server
+  run_compose build client
+  run_compose up -d
+else
+  run_compose up -d --build
+fi
 run_compose ps
 
 echo
