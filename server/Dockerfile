@@ -29,8 +29,9 @@ COPY --from=builder /app/server/package.json ./server/package.json
 COPY --from=builder /app/server/package-lock.json ./server/package-lock.json
 WORKDIR /app/server
 RUN npm ci --omit=dev \
-  && npx prisma generate --schema ../prisma/schema.prisma \
   && npm cache clean --force
+COPY --from=builder /app/server/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/server/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/server/dist ./server/dist
 RUN mkdir -p /app/server/uploads
 EXPOSE 4000
