@@ -1,5 +1,14 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve } from "node:path";
 import { z } from "zod";
+
+const rootEnvPath = resolve(
+  process.cwd(),
+  process.env.NODE_ENV === "production" ? "../.env.production" : "../.env.local"
+);
+
+config({ path: rootEnvPath });
+config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),

@@ -5,7 +5,11 @@
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
     "server:dev": "npm --prefix server run dev",
-    "server:build": "npm --prefix server run build"
+    "server:build": "npm --prefix server run build",
+    "prisma:generate": "bash -lc 'set -a && source ./.env.local && set +a && prisma generate --schema ./prisma/schema.prisma'",
+    "prisma:migrate": "bash -lc 'set -a && source ./.env.local && set +a && prisma migrate dev --schema ./prisma/schema.prisma'",
+    "prisma:deploy": "bash -lc 'set -a && source ./.env.production && set +a && prisma migrate deploy --schema ./prisma/schema.prisma'",
+    "prisma:studio": "bash -lc 'set -a && source ./.env.local && set +a && prisma studio --schema ./prisma/schema.prisma'"
   },
   "devDependencies": {
     "prisma": "^5.22.0"

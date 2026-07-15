@@ -6,8 +6,10 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "prisma:generate": "prisma generate --schema ../prisma/schema.prisma",
-    "prisma:migrate": "prisma migrate dev --schema ../prisma/schema.prisma"
+    "prisma:generate": "bash -lc 'set -a && source ../.env.local && set +a && prisma generate --schema ../prisma/schema.prisma'",
+    "prisma:migrate": "bash -lc 'set -a && source ../.env.local && set +a && prisma migrate dev --schema ../prisma/schema.prisma'",
+    "prisma:deploy": "bash -lc 'set -a && source ../.env.production && set +a && prisma migrate deploy --schema ../prisma/schema.prisma'",
+    "prisma:studio": "bash -lc 'set -a && source ../.env.local && set +a && prisma studio --schema ../prisma/schema.prisma'"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",

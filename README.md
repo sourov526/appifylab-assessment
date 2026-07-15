@@ -23,17 +23,18 @@ appifylab_assessment/
 ├─ client/
 ├─ server/
 ├─ prisma/
-├─ .env.example
+├─ .env.local
+├─ .env.production
 └─ docker-compose.yml
 ```
 
 ## Local Setup
 
-1. Copy `.env.example` to `.env` and update values if needed.
+1. Review `.env.local` and update values if needed.
 2. Start PostgreSQL and Redis:
 
 ```bash
-docker compose up -d
+docker compose --env-file .env.local up -d
 ```
 
 3. Install client dependencies:
@@ -53,8 +54,17 @@ npm install
 5. Generate Prisma client and run migrations:
 
 ```bash
+cd ..
+cd appifylab_assessment
 npm run prisma:generate
 npm run prisma:migrate
+```
+
+Prisma Studio:
+
+```bash
+cd /Users/sourov/Downloads/Appifylab/appifylab_assessment
+npm run prisma:studio
 ```
 
 6. Start the API server:
@@ -71,6 +81,20 @@ npm run dev
 ```
 
 8. Open `http://localhost:3000`
+
+## Deployment
+
+- Local Docker deploy:
+
+```bash
+bash deploy.sh --local
+```
+
+- Production Docker deploy:
+
+```bash
+bash deploy.sh --production
+```
 
 ## Available Pages
 

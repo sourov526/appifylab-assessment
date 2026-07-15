@@ -65,6 +65,10 @@ require_command() {
 require_command docker
 require_command openssl
 
+if [[ "$MODE" == "local" ]]; then
+  require_command npm
+fi
+
 if docker compose version >/dev/null 2>&1; then
   COMPOSE_CMD="docker compose"
 elif command -v docker-compose >/dev/null 2>&1; then
@@ -73,6 +77,29 @@ else
   echo "Docker Compose is not available. Install either 'docker compose' or 'docker-compose'." >&2
   exit 1
 fi
+
+run_compose() {
+  if [[ "$COMPOSE_CMD" == "docker compose" ]]; then
+    docker compose --env-file "$MODE_ENV_FILE" "$@"
+  else
+    docker-compose --env-file "$MODE_ENV_FILE" "$@"
+  fi
+}
+
+wait_for_postgres() {
+  local retries=30
+
+  until run_compose exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; do
+    retries=$((retries - 1))
+
+    if (( retries == 0 )); then
+      echo "PostgreSQL did not become ready in time." >&2
+      exit 1
+    fi
+
+    sleep 2
+  done
+}
 
 if [[ -f "$MODE_ENV_FILE" ]]; then
   set -a
@@ -111,8 +138,8 @@ fi
 
 CLIENT_ORIGIN="${CLIENT_ORIGIN:-http://${PUBLIC_HOST}:${CLIENT_PORT}}"
 NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-http://${PUBLIC_HOST}:${SERVER_PORT}/api}"
-DATABASE_URL="${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}}"
-REDIS_URL="${REDIS_URL:-redis://redis:6379}"
+DATABASE_URL="${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}}"
+REDIS_URL="${REDIS_URL:-redis://localhost:${REDIS_PORT}}"
 
 mkdir -p "$PROJECT_DIR/server/uploads"
 
@@ -139,40 +166,23 @@ export SESSION_COOKIE_SECURE
 export SESSION_MAX_AGE_MS
 export UPLOAD_DIR
 
-cat > "$PROJECT_DIR/.env" <<EOF
-PUBLIC_HOST=$PUBLIC_HOST
-NODE_ENV=$NODE_ENV
-CLIENT_PORT=$CLIENT_PORT
-SERVER_PORT=$SERVER_PORT
-POSTGRES_PORT=$POSTGRES_PORT
-REDIS_PORT=$REDIS_PORT
-CLIENT_BIND_IP=$CLIENT_BIND_IP
-SERVER_BIND_IP=$SERVER_BIND_IP
-POSTGRES_BIND_IP=$POSTGRES_BIND_IP
-REDIS_BIND_IP=$REDIS_BIND_IP
-CLIENT_ORIGIN=$CLIENT_ORIGIN
-NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-POSTGRES_DB=$POSTGRES_DB
-POSTGRES_USER=$POSTGRES_USER
-POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-DATABASE_URL=$DATABASE_URL
-REDIS_URL=$REDIS_URL
-SESSION_SECRET=$SESSION_SECRET
-SESSION_COOKIE_NAME=$SESSION_COOKIE_NAME
-SESSION_COOKIE_SECURE=$SESSION_COOKIE_SECURE
-SESSION_MAX_AGE_MS=$SESSION_MAX_AGE_MS
-UPLOAD_DIR=$UPLOAD_DIR
-EOF
-
 echo "Deploying in ${MODE} mode with:"
 echo "  Node env: $NODE_ENV"
 echo "  Env file: $MODE_ENV_FILE"
 echo "  Frontend: $CLIENT_ORIGIN"
 echo "  API:      $NEXT_PUBLIC_API_URL"
 
-$COMPOSE_CMD pull postgres redis
-$COMPOSE_CMD up -d --build
-$COMPOSE_CMD ps
+run_compose pull postgres redis
+run_compose up -d postgres redis
+wait_for_postgres
+
+if [[ "$MODE" == "local" ]]; then
+  npm run prisma:generate
+  npm run prisma:migrate
+fi
+
+run_compose up -d --build
+run_compose ps
 
 echo
 echo "Deployment complete."
